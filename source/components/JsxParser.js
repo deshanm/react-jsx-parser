@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Parser } from 'acorn-jsx'
 import React, { Component, Fragment } from 'react'
 import ATTRIBUTES from '../constants/attributeNames'
@@ -44,81 +45,86 @@ export default class JsxParser extends Component {
   }
 
   parseExpression = (expression) => {
-    switch (expression.type) {
-      case 'JSXElement':
-        return this.parseElement(expression)
-      case 'JSXText':
-        const key = this.props.disableKeyGeneration ? undefined : randomHash()
-        return this.props.disableFragments
-          ? expression.value
-          : <Fragment key={key}>{expression.value}</Fragment>
-      case 'JSXAttribute':
-        if (expression.value === null) return true
-        return this.parseExpression(expression.value)
-      case 'ConditionalExpression':
-        return this.parseExpression(expression.test)
-          ? this.parseExpression(expression.consequent)
-          : this.parseExpression(expression.alternate)
-      case 'ArrayExpression':
-        return expression.elements.map(this.parseExpression)
-      case 'ObjectExpression':
-        const object = {}
-        expression.properties.forEach((prop) => {
-          object[prop.key.name || prop.key.value] = this.parseExpression(prop.value)
-        })
-        return object
-      case 'Identifier':
-        return (this.props.bindings || {})[expression.name]
-      case 'JSXExpressionContainer':
-        return this.parseExpression(expression.expression)
-      case 'Literal':
-        return expression.value
-      case 'MemberExpression':
-        return (this.parseExpression(expression.object) || {})[expression.property.name]
-      case 'CallExpression':
-        const parsedCallee = this.parseExpression(expression.callee)
-        if (parsedCallee === undefined) {
-          this.props.onError(new Error(`The expression '${expression.callee}' could not be resolved, resulting in an undefined return value.`))
-          return undefined
-        }
-        return parsedCallee(...expression.arguments.map(this.parseExpression))
-      case 'LogicalExpression':
-        const left = this.parseExpression(expression.left)
-        if (expression.operator === '||' && left) return left
-        if ((expression.operator === '&&' && left) || (expression.operator === '||' && !left)) {
-          return this.parseExpression(expression.right)
-        }
-        return false
-      case 'BinaryExpression':
-        /* eslint-disable eqeqeq,max-len */
-        switch (expression.operator) {
-          case '+':
-            return this.parseExpression(expression.left) + this.parseExpression(expression.right)
-          case '-':
-            return this.parseExpression(expression.left) - this.parseExpression(expression.right)
-          case '*':
-            return this.parseExpression(expression.left) * this.parseExpression(expression.right)
-          case '/':
-            return this.parseExpression(expression.left) / this.parseExpression(expression.right)
-          case '==':
-            return this.parseExpression(expression.left) == this.parseExpression(expression.right)
-          case '!=':
-            return this.parseExpression(expression.left) != this.parseExpression(expression.right)
-          case '===':
-            return this.parseExpression(expression.left) === this.parseExpression(expression.right)
-          case '!==':
-            return this.parseExpression(expression.left) !== this.parseExpression(expression.right)
-        /* eslint-enable eqeqeq,max-len */
-        } break
-      case 'UnaryExpression':
-        switch (expression.operator) {
-          case '+':
-            return expression.argument.value
-          case '-':
-            return -1 * expression.argument.value
-          case '!':
-            return (!expression.argument.value).toString()
-        }
+    console.log('expression', expression)
+    try {
+      switch (expression.type) {
+        case 'JSXElement':
+          return this.parseElement(expression)
+        case 'JSXText':
+          const key = this.props.disableKeyGeneration ? undefined : randomHash()
+          return this.props.disableFragments
+            ? expression.value
+            : <Fragment key={key}>{expression.value}</Fragment>
+        case 'JSXAttribute':
+          if (expression.value === null) return true
+          return this.parseExpression(expression.value)
+        case 'ConditionalExpression':
+          return this.parseExpression(expression.test)
+            ? this.parseExpression(expression.consequent)
+            : this.parseExpression(expression.alternate)
+        case 'ArrayExpression':
+          return expression.elements.map(this.parseExpression)
+        case 'ObjectExpression':
+          const object = {}
+          expression.properties.forEach((prop) => {
+            object[prop.key.name || prop.key.value] = this.parseExpression(prop.value)
+          })
+          return object
+        case 'Identifier':
+          return (this.props.bindings || {})[expression.name]
+        case 'JSXExpressionContainer':
+          return this.parseExpression(expression.expression)
+        case 'Literal':
+          return expression.value
+        case 'MemberExpression':
+          return (this.parseExpression(expression.object) || {})[expression.property.name]
+        case 'CallExpression':
+          const parsedCallee = this.parseExpression(expression.callee)
+          if (parsedCallee === undefined) {
+            this.props.onError(new Error(`The expression '${expression.callee}' could not be resolved, resulting in an undefined return value.`))
+            return undefined
+          }
+          return parsedCallee(...expression.arguments.map(this.parseExpression))
+        case 'LogicalExpression':
+          const left = this.parseExpression(expression.left)
+          if (expression.operator === '||' && left) return true
+          if ((expression.operator === '&&' && left) || (expression.operator === '||' && !left)) {
+            return this.parseExpression(expression.right)
+          }
+          return false
+        case 'BinaryExpression':
+          /* eslint-disable eqeqeq,max-len */
+          switch (expression.operator) {
+            case '+':
+              return this.parseExpression(expression.left) + this.parseExpression(expression.right)
+            case '-':
+              return this.parseExpression(expression.left) - this.parseExpression(expression.right)
+            case '*':
+              return this.parseExpression(expression.left) * this.parseExpression(expression.right)
+            case '/':
+              return this.parseExpression(expression.left) / this.parseExpression(expression.right)
+            case '==':
+              return this.parseExpression(expression.left) == this.parseExpression(expression.right)
+            case '!=':
+              return this.parseExpression(expression.left) != this.parseExpression(expression.right)
+            case '===':
+              return this.parseExpression(expression.left) === this.parseExpression(expression.right)
+            case '!==':
+              return this.parseExpression(expression.left) !== this.parseExpression(expression.right)
+          /* eslint-enable eqeqeq,max-len */
+          } break
+        case 'UnaryExpression':
+          switch (expression.operator) {
+            case '+':
+              return expression.argument.value
+            case '-':
+              return -1 * expression.argument.value
+            case '!':
+              return (!expression.argument.value).toString()
+          }
+      }
+    } catch (error) {
+      console.log('expression error', error)
     }
   }
 
@@ -132,7 +138,9 @@ export default class JsxParser extends Component {
   }
 
   parseElement = (element) => {
-    const { allowUnknownElements, components = {}, componentsOnly, onError } = this.props
+    const {
+ allowUnknownElements, components = {}, componentsOnly, onError 
+} = this.props
     const { children: childNodes = [], openingElement } = element
     const { attributes = [] } = openingElement
     const name = this.parseName(openingElement.name)
