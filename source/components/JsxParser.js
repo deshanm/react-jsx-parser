@@ -104,7 +104,7 @@ export default class JsxParser extends Component {
             case '/':
               return this.parseExpression(expression.left) / this.parseExpression(expression.right)
             case '==':
-              return this.parseExpression(expression.left) == this.parseExpression(expression.right)
+              return (this.parseExpression(expression.left) == this.parseExpression(expression.right)).toString()
             case '!=':
               return this.parseExpression(expression.left) != this.parseExpression(expression.right)
             case '===':
